@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
@@ -25,8 +26,9 @@ import lombok.NoArgsConstructor;
 public class SurveyMasterDao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name="id")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="survey_seq_gen")
+    @SequenceGenerator(name="survey_seq_gen", sequenceName = "survey_seq", allocationSize=1)
+    @Column(name="id", updatable=false)
 	private Long id;
 
     @Column(name="survey_code", nullable=false, unique=true)

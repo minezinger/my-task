@@ -20,12 +20,13 @@ public class MyTaskDemoTests {
 
     @Test
     public void getPing() throws Exception {
-		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/api/health/ping").build()).exchange().expectStatus().isOk();
+		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/health/ping").build()).exchange().expectStatus().isOk();
     }
 
     @Test
+    @Ignore
     public void getSurveyFirst() throws Exception {
-		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/api/survey/search?key=id&value=1").build()).exchange().expectStatus().isOk();
+		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/survey/search?key=id&value=1").build()).exchange().expectStatus().isOk();
     }
 
 }
