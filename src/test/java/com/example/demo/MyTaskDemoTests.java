@@ -23,4 +23,9 @@ public class MyTaskDemoTests {
 		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/api/health/ping").build()).exchange().expectStatus().isOk();
     }
 
+    @Test
+    public void getSurveyFirst() throws Exception {
+		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/api/survey/search?key=id&value=1").build()).exchange().expectStatus().isOk();
+    }
+
 }
