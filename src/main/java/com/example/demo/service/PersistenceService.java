@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,12 +11,17 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.model.json.DecisionResponse;
+import com.example.demo.model.json.DecisionDbSaveResult;
+import com.example.demo.model.json.SurveyLogStat;
+import com.example.demo.model.json.SurveyQuestionDbSaveResult;
+import com.example.demo.model.json.SurveyQuestionInfo;
 import com.example.demo.model.json.SurveySelection;
-import com.example.demo.model.json.SurveyStatResponse;
+import com.example.demo.model.json.SurveyStatDbResult;
 import com.example.demo.persistence.dao.ISurveyLogStat;
 import com.example.demo.persistence.dao.SurveyLogBookDao;
 import com.example.demo.persistence.dao.SurveyMasterDao;
+import com.example.demo.persistence.dao.json.Choice;
+import com.example.demo.persistence.dao.json.Choices;
 import com.example.demo.persistence.repository.SurveyLogBookRepository;
 import com.example.demo.persistence.repository.SurveyMasterRepository;
 
@@ -63,11 +69,11 @@ public class PersistenceService {
 		 return surveyNameList;
 	}
 
-	public DecisionResponse saveDecision(SurveySelection selection) {
-		DecisionResponse response = new DecisionResponse();
+	public DecisionDbSaveResult saveDecision(SurveySelection selection) {
+		DecisionDbSaveResult dbResult = new DecisionDbSaveResult();
 		if(selection == null) {
 			LOGGER.error("Input request is null.");
-			response.setErrorMessage("Input request is null. Please check the request value.");
+			dbResult.setErrorMessage("Input request is null. Please check the request value.");
 		}
 		LOGGER.info("saveDecision()" + selection.getSurveySource());
 		
@@ -77,7 +83,74 @@ public class PersistenceService {
 			logBookDao.setSurveySource(selection.getSurveySource());
 			logBookDao.setSelectedChoice(selection.getSelectedChoice());
 
-			response.setCreatedLog( surveyLogBookRepo.save(logBookDao) );
+			dbResult.setCreatedLog( surveyLogBookRepo.save(logBookDao) );
+		} catch(Exception e) {
+			LOGGER.error(e.getMessage());
+			dbResult.setErrorMessage(e.getMessage());
+		}
+		
+		return dbResult;
+	}
+	
+	public SurveyStatDbResult getSurveyStat(String surveyCode) {
+		LOGGER.info("getSurveyStat()" + surveyCode);
+		SurveyStatDbResult dbResult = new SurveyStatDbResult();
+		try {
+			List<SurveyLogStat> logStatList = new ArrayList<>();
+			SurveyMasterDao surveyMaster = this.surveyMasterRepo.findBySurveyCode(surveyCode);
+			Map<String, String> choiceKeyMap = getChoiceKeyMap(surveyMaster.getChoices());
+			
+			List<ISurveyLogStat> iLogStatList = surveyLogBookRepo.retrieveStatBySurveyCode(surveyCode);
+			iLogStatList.stream().forEach(iLog -> {
+				LOGGER.debug("choice : " + iLog.getSelectedChoice() + ", count :" + iLog.getCountNum());
+				String choiceName = choiceKeyMap.get(iLog.getSelectedChoice());
+				if(choiceName != null) {
+					SurveyLogStat stat = new SurveyLogStat(surveyCode, surveyMaster.getSurveyName(), choiceName, iLog.getSelectedChoice(), iLog.getCountNum());
+					logStatList.add(stat);
+				} else {
+					SurveyLogStat stat = new SurveyLogStat(surveyCode, surveyMaster.getSurveyName(), iLog.getSelectedChoice(), iLog.getCountNum()); 
+					logStatList.add(stat);
+				}
+			});
+
+			dbResult.setSurveyCode(surveyCode);
+			dbResult.setSurveyMaster(surveyMaster);
+			dbResult.setSurveyLogStats(logStatList);
+		} catch(Exception e) {
+			LOGGER.error(e.getMessage());
+			dbResult.setErrorMessage(e.getMessage());
+		}
+		
+		return dbResult;
+	}
+	
+	public Map<String, String> getChoiceKeyMap(Choices choices) {
+		Map<String, String> choiceKeyMap = new HashMap<String, String>();
+		
+		for(Choice choice : choices.getChoices()) {
+			choiceKeyMap.put(choice.getChoiceKey().toString(), choice.getChoiceName());
+		}
+		return choiceKeyMap;
+	}
+	
+	public SurveyQuestionDbSaveResult saveSurveyQuestion(SurveyQuestionInfo questionInfo) {
+		SurveyQuestionDbSaveResult response = new SurveyQuestionDbSaveResult();
+		if(questionInfo == null) {
+			LOGGER.error("Input request is null.");
+			response.setErrorMessage("Input request is null. Please check the request value.");
+		}
+		LOGGER.info("saveSurveyQuestion()" + questionInfo.getSurveyCode());
+		
+		try {
+			SurveyMasterDao masterDao = new SurveyMasterDao();
+			masterDao.setSurveyCode(questionInfo.getSurveyCode());
+			masterDao.setSurveyType(questionInfo.getSurveyType());
+			masterDao.setSurveyName(questionInfo.getSurveyName());
+			masterDao.setSurveyDesc(questionInfo.getSurveyDesc());
+			masterDao.setQuestionText(questionInfo.getQuestionText());
+			masterDao.setChoices(questionInfo.getOptions());
+
+			response.setCreatedLog( surveyMasterRepo.save(masterDao) );
 		} catch(Exception e) {
 			LOGGER.error(e.getMessage());
 			response.setErrorMessage(e.getMessage());
@@ -86,14 +159,5 @@ public class PersistenceService {
 		return response;
 	}
 	
-	public SurveyStatResponse getSurveyStat(String surveyCode) {
-		SurveyStatResponse response = new SurveyStatResponse();
-		List<ISurveyLogStat> logStatList = surveyLogBookRepo.retrieveStatBySurveyCode(surveyCode);
-
-		response.setSurveyCode(surveyCode);
-		response.setSurveyLogStats(logStatList);
-		
-		return response;
-	}
 }    
 	

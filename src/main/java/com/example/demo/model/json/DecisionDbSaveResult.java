@@ -5,8 +5,9 @@ import com.example.demo.persistence.dao.SurveyLogBookDao;
 import lombok.Data;
 
 @Data
-public class DecisionResponse {
+public class DecisionDbSaveResult {
 
 	private String errorMessage;
+	// DB Mapping data
 	private SurveyLogBookDao createdLog;
 }

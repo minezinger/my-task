@@ -40,6 +40,9 @@ public class SurveyMasterDao {
     @Column(name="survey_name")
 	private String surveyName;
 
+    @Column(name="survey_desc")
+	private String surveyDesc;
+
     @Column(name="question_text")
 	private String questionText;
 

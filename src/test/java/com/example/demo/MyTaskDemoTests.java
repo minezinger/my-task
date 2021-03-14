@@ -1,6 +1,5 @@
 package com.example.demo;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +23,8 @@ public class MyTaskDemoTests {
     }
 
     @Test
-    @Ignore
-    public void getSurveyFirst() throws Exception {
-		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/survey/search?key=id&value=1").build()).exchange().expectStatus().isOk();
+    public void getSurveyOne() throws Exception {
+		this.webClient.get().uri(uriBuilder -> uriBuilder.path("/survey/list/TS-001").build()).exchange().expectStatus().isOk();
     }
 
 }

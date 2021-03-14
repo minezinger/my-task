@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class DecisionRequest {
 
+	// Mapping input
 	private SurveySelection surveySelection;
 }
