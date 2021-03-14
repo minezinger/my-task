@@ -31,11 +31,11 @@
                 "choices": [
                     {
                         "choiceKey": 1,
-                        "choiceName": "Castle Hill"
+                        "choiceName": "Sydney"
                     },
                     {
                         "choiceKey": 2,
-                        "choiceName": "Epping"
+                        "choiceName": "Paris"
                     }
                 ]
             }        
